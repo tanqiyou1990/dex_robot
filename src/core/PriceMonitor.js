@@ -146,57 +146,50 @@ class PriceMonitor {
         // 计算实际利润率（价差减去总成本）
         const profitRatio = priceDiff - totalCostRatio;
 
-        // 确定价格高低
-        const highDex =
-          pancakePriceNum > biswapPriceNum ? "PancakeSwap" : "BiSwap";
-        const lowDex =
-          pancakePriceNum > biswapPriceNum ? "BiSwap" : "PancakeSwap";
-        const highPrice =
-          pancakePriceNum > biswapPriceNum
-            ? pancakePriceFormatted
-            : biswapPriceFormatted;
-        const lowPrice =
-          pancakePriceNum > biswapPriceNum
-            ? biswapPriceFormatted
-            : pancakePriceFormatted;
-
-        // 根据利润率选择颜色
-        let diffColor = chalk.white;
+        // 只有当预期利润大于0时才输出信息
         if (profitRatio > 0) {
-          diffColor = chalk.green;
-        } else if (priceDiff >= 0.005) {
-          diffColor = chalk.yellow;
-        } else {
-          diffColor = chalk.red;
+          // 确定价格高低
+          const highDex =
+            pancakePriceNum > biswapPriceNum ? "PancakeSwap" : "BiSwap";
+          const lowDex =
+            pancakePriceNum > biswapPriceNum ? "BiSwap" : "PancakeSwap";
+          const highPrice =
+            pancakePriceNum > biswapPriceNum
+              ? pancakePriceFormatted
+              : biswapPriceFormatted;
+          const lowPrice =
+            pancakePriceNum > biswapPriceNum
+              ? biswapPriceFormatted
+              : pancakePriceFormatted;
+
+          // 在控制台打印格式化的价格信息
+          console.log(
+            `\n${chalk.cyan(pair.name)} 价格信息:\n` +
+              `${highDex}(高): ${chalk.red(highPrice)} ${
+                pair.quoteToken.symbol
+              }\n` +
+              `${lowDex}(低): ${chalk.green(lowPrice)} ${
+                pair.quoteToken.symbol
+              }\n` +
+              `价格差异: ${chalk.green((priceDiff * 100).toFixed(6) + "%")}\n` +
+              `预估成本: ${chalk.yellow(
+                (totalCostRatio * 100).toFixed(6) + "%"
+              )}\n` +
+              `预期利润: ${chalk.green((profitRatio * 100).toFixed(6) + "%")}`
+          );
+
+          // 同时记录到日志文件
+          logger.info({
+            pair: pair.name,
+            highDex,
+            highPrice,
+            lowDex,
+            lowPrice,
+            priceDiff: (priceDiff * 100).toFixed(6) + "%",
+            totalCost: (totalCostRatio * 100).toFixed(6) + "%",
+            expectedProfit: (profitRatio * 100).toFixed(6) + "%",
+          });
         }
-
-        // 在控制台打印格式化的价格信息
-        console.log(
-          `\n${chalk.cyan(pair.name)} 价格信息:\n` +
-            `${highDex}(高): ${chalk.red(highPrice)} ${
-              pair.quoteToken.symbol
-            }\n` +
-            `${lowDex}(低): ${chalk.green(lowPrice)} ${
-              pair.quoteToken.symbol
-            }\n` +
-            `价格差异: ${diffColor((priceDiff * 100).toFixed(6) + "%")}\n` +
-            `预估成本: ${chalk.yellow(
-              (totalCostRatio * 100).toFixed(6) + "%"
-            )}\n` +
-            `预期利润: ${diffColor((profitRatio * 100).toFixed(6) + "%")}`
-        );
-
-        // 同时记录到日志文件
-        logger.info({
-          pair: pair.name,
-          highDex,
-          highPrice,
-          lowDex,
-          lowPrice,
-          priceDiff: (priceDiff * 100).toFixed(6) + "%",
-          totalCost: (totalCostRatio * 100).toFixed(6) + "%",
-          expectedProfit: (profitRatio * 100).toFixed(6) + "%",
-        });
       }
     }
   }
